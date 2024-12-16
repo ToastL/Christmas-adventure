@@ -3,7 +3,7 @@ function getNanoTime() {
 }
 
 function getCurrentMillis() {
-    return new Date().getMilliseconds()
+    return performance.now()
 }
 
 export {getNanoTime, getCurrentMillis}
