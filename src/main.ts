@@ -16,6 +16,11 @@ ctx.imageSmoothingEnabled = false
 
 const client = new Client(ctx)
 
+client.init()
+
+canvas.addEventListener("mousemove", e => {if (client.mouseMove) client.mouseMove(e.offsetX, e.offsetY)})
+document.addEventListener("keydown", e => {if (client.keyDown) client.keyDown(e.key)})
+document.addEventListener("keyup", e => {if (client.keyUp) client.keyUp(e.key)})
 
 let UPS = 1000 / 120
 
@@ -32,13 +37,8 @@ const loop = () => {
   previous = current
   lag += elapsed
 
-  while (lag >= UPS) {
-    client.update(elapsed/1000)
-    ticks++
-
-    lag -= UPS
-  }
-
+  client.update(elapsed/1000)
+  
   client.beforeRender()
   client.render()
   client.afterRender()

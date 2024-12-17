@@ -1,29 +1,54 @@
-import Engine from "./util/engine";
+import Engine from "./engine";
+
+import { EngineImage } from "./engine/image";
+import { EngineObject } from "./engine/object";
 
 class Client extends Engine {
-    private lineX
-    private lineY
-    private lineI
-    constructor(ctx: CanvasRenderingContext2D) {
-        super(ctx, 800, 500)
+  private player: EngineObject
+  
+  private playerX: number = 0
+  private playerY: number = 32
 
-        this.lineX = 5
-        this.lineY = 5
-        this.lineI = 0
-    }
+  private aDown = false
+  private dDown = false
 
-    public update(dt: number) {
-        this.lineX = 60 + Math.cos(this.lineI)*10
-        this.lineY = 60 + Math.sin(this.lineI)*10
-        this.lineI+=1*dt
-        // console.log(this.lineX)
-    }
+  constructor(ctx: CanvasRenderingContext2D) {
+    super(ctx, 800, 500)
 
-    public render() {
-        this.clear(0, 0, 0, 255)
+    this.player = new EngineObject(32, 32, 0, 0)
+  }
 
-        this.drawLine(0, 0, this.lineX, this.lineY, 255, 255, 255, 255)
-    }
+  public async init() {
+    const playerImage = new EngineImage()
+    await playerImage.loadPNG("/images/standing_gasmask/frame1.png")
+
+    this.player.setImage(playerImage)
+  }
+
+  public update(dt: number) {
+    if (this.aDown)
+        this.playerX -= 40*dt
+    if (this.dDown)
+        this.playerX += 40*dt
+    this.player.setPosX(this.playerX)
+    
+    this.player.setPosY(this.playerY)
+  }
+
+  public render() {
+    this.clear(55, 175, 225, 255)
+
+    this.drawObject(this.player)
+  }
+
+  public keyDown(key: string) {
+    if (key == "a") this.aDown = true
+    if (key == "d") this.dDown = true
+  }
+  public keyUp(key: string) {
+    if (key == "a") this.aDown = false
+    if (key == "d") this.dDown = false
+  }
 }
 
 export default Client;
