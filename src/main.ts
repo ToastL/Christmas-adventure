@@ -12,6 +12,7 @@ const ctx = canvas.getContext("2d")
 if (!ctx)
   throw new Error("Could not get ctx")
 
+ctx.imageSmoothingEnabled = false
 
 const client = new Client(ctx)
 
@@ -32,8 +33,9 @@ const loop = () => {
   lag += elapsed
 
   while (lag >= UPS) {
-    client.update()
+    client.update(elapsed/1000)
     ticks++
+
     lag -= UPS
   }
 

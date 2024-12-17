@@ -11,4 +11,7 @@ body {
 #app {
     width: 800px;
     height: 500px;
+
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
 }
