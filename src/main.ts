@@ -1,58 +1,21 @@
-import './styles.css'
+import GameScene from './client';
+import { ToastEngine } from './engine';
 
-import Client from './client'
+import './style.css';
 
-import * as Time from './util/time'
+const engine = new ToastEngine();
 
-const canvas = document.querySelector<HTMLCanvasElement>('#app')
-if (!canvas)
-  throw new Error("Could not get canvas")
+const test = new GameScene(engine)
+engine.scene = test
 
-const ctx = canvas.getContext("2d")
-if (!ctx)
-  throw new Error("Could not get ctx")
+window.addEventListener('resize', () => engine.resize(window.innerWidth, window.innerHeight))
+window.addEventListener('keydown', e => engine.keyDown(e.key))
+window.addEventListener('keyup', e => engine.keyUp(e.key))
+engine.resize(window.innerWidth, window.innerHeight)
 
-ctx.imageSmoothingEnabled = false
+const container = document.querySelector('#app')
+if (!container) throw new Error('Could not get container')
 
-const client = new Client(ctx)
+engine.appendCanvas(container)
 
-
-let UPS = 1000 / 120
-
-let previous = Time.getCurrentMillis()
-let lag = 0
-
-let timer = Time.getCurrentMillis();
-
-let frames = 0, ticks = 0
-
-const loop = () => {
-  const current = Time.getCurrentMillis()
-  const elapsed = current - previous
-  previous = current
-  lag += elapsed
-
-  while (lag >= UPS) {
-    client.update(elapsed/1000)
-    ticks++
-
-    lag -= UPS
-  }
-
-  client.beforeRender()
-  client.render()
-  client.afterRender()
-  frames++
-
-  if (Time.getCurrentMillis() - timer >= 1000) {
-    console.log(`frames: ${frames} \t ticks: ${ticks}`)
-
-    frames = 0
-    ticks = 0
-    timer += 1000
-  }
-  
-  requestAnimationFrame(loop)
-}
-
-loop()
+engine.run()

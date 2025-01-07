@@ -1,29 +1,77 @@
-import Engine from "./util/engine";
+import { ToastEngine, Scene } from './engine';
+import { LightSource, GameObject, Sprite } from './engine/material';
+import { Vector2, Vector3 } from './engine/math';
+import { BoxCollider } from './engine/physics';
 
-class Client extends Engine {
-    private lineX
-    private lineY
-    private lineI
-    constructor(ctx: CanvasRenderingContext2D) {
-        super(ctx, 800, 500)
+import standing_gasmask from './img/standing_gasmask.png'
+import assets from './img/Assets.png'
 
-        this.lineX = 5
-        this.lineY = 5
-        this.lineI = 0
+class GameScene extends Scene {
+    private player
+    private jumping = false
+
+    private lightSource1
+    private lightSource2
+    private lightSource3
+
+    constructor(engine: ToastEngine) {
+        super(engine)
+
+        this.player = new GameObject(engine, new Sprite(engine, standing_gasmask, { width: 32, height: 32 }))
+        this.player.boxcollider = new BoxCollider(this.player, new Vector2(11, 32), new Vector2(13, 0))
+
+        for (let i = 0; i < 10; i++) {
+            const object = new GameObject(engine, new Sprite(engine, assets, { width: 16, height: 16 }))
+            object.boxcollider = new BoxCollider(object)
+            object.boxcollider.stuck = true
+            object.frame.x = 3
+            if (i == 0)
+                object.frame.x = 2
+            if (i == 9)
+                object.frame.x = 4
+            object.position = new Vector2(-5*16+i*16, 100)
+
+            this.addWorld = object
+        }
+
+        const object = new GameObject(engine, new Sprite(engine, assets, { width: 16, height: 16 }))
+        object.boxcollider = new BoxCollider(object)
+        object.boxcollider.stuck = true
+        object.frame.x = 3
+        object.position = new Vector2(0, 84)
+
+        this.addWorld = object
+
+        this.lightSource1 = new LightSource(engine, new Vector2(-25, -21.5), new Vector3(1.0, 0.0, 0.0), 75)
+        this.lightSource2 = new LightSource(engine, new Vector2(25, -21.5), new Vector3(0.0, 1.0, 0.0), 75)
+        this.lightSource3 = new LightSource(engine, new Vector2(0, 21.5), new Vector3(0.0, 0.0, 1.0), 75)
+
+        this.addWorld = this.player
+
+        this.addWorld = this.lightSource1
+        this.addWorld = this.lightSource2
+        this.addWorld = this.lightSource3
     }
 
     public update(dt: number) {
-        this.lineX = 60 + Math.cos(this.lineI)*10
-        this.lineY = 60 + Math.sin(this.lineI)*10
-        this.lineI+=1*dt
-        // console.log(this.lineX)
-    }
+        this.player.velocity.x *= .8
+        this.player.velocity.y *= .98
+        this.player.velocity.y += 10
+        // this.camera.position = new Vector2(this.player.position.x, this.player.position.y)
 
-    public render() {
-        this.clear(0, 0, 0, 255)
 
-        this.drawLine(0, 0, this.lineX, this.lineY, 255, 255, 255, 255)
+        let playerMovement = 0
+        if (this.engine.getKeyDown('d')) playerMovement += 50
+        if (this.engine.getKeyDown('a')) playerMovement -= 50
+        if (this.engine.getKeyDown(' ')) { this.player.velocity.y -= 100 }
+        
+        if (playerMovement != 0) this.player.velocity.x = playerMovement
+
+        if (
+            this.player.velocity.x < .5 && this.player.velocity.y < .5 &&
+            this.player.velocity.x > -.5 && this.player.velocity.y > -.5
+        ) this.player.frame.x = (this.player.frame.x+2*dt) % 4
     }
 }
 
-export default Client;
+export default GameScene
