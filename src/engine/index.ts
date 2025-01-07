@@ -38,7 +38,6 @@ class Engine {
     b: number, 
     a: number
   ) {
-
     x = Math.round(x)
     y = Math.round(y)
     
