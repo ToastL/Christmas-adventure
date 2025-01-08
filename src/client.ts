@@ -1,81 +1,77 @@
-import Engine from "./engine";
+import { ToastEngine, Scene } from './engine';
+import { LightSource, GameObject, Sprite } from './engine/material';
+import { Vector2, Vector3 } from './engine/math';
+import { BoxCollider } from './engine/physics';
 
-import { EngineImage } from "./engine/image";
-import { EngineObject } from "./engine/object";
+import standing_gasmask from './img/standing_gasmask.png'
+import assets from './img/Assets.png'
 
-class Client extends Engine {
-  private playerImages: EngineImage[]
-  private player: EngineObject
-  
-  private playerX: number = 0
-  private playerY: number = 32
+class GameScene extends Scene {
+    private player
+    private jumping = false
 
-  private aDown = false
-  private dDown = false
+    private lightSource1
+    private lightSource2
+    private lightSource3
 
-  private playerFrame = 0
+    constructor(engine: ToastEngine) {
+        super(engine)
 
-  constructor(ctx: CanvasRenderingContext2D) {
-    super(ctx, 800, 500)
+        this.player = new GameObject(engine, new Sprite(engine, standing_gasmask, { width: 32, height: 32 }))
+        this.player.boxcollider = new BoxCollider(this.player, new Vector2(11, 32), new Vector2(13, 0))
 
-    this.player = new EngineObject(32, 32, 0, 0)
-    this.playerImages = []
-  }
+        for (let i = 0; i < 10; i++) {
+            const object = new GameObject(engine, new Sprite(engine, assets, { width: 16, height: 16 }))
+            object.boxcollider = new BoxCollider(object)
+            object.boxcollider.stuck = true
+            object.frame.x = 3
+            if (i == 0)
+                object.frame.x = 2
+            if (i == 9)
+                object.frame.x = 4
+            object.position = new Vector2(-5*16+i*16, 100)
 
-  public async init() {
-    for (let i = 0; i < 4; i++) {
-      const playerImage = new EngineImage()
+            this.addWorld = object
+        }
 
-      await playerImage.loadPNG(`/images/standing_gasmask/frame${i+1}.png`)
+        const object = new GameObject(engine, new Sprite(engine, assets, { width: 16, height: 16 }))
+        object.boxcollider = new BoxCollider(object)
+        object.boxcollider.stuck = true
+        object.frame.x = 3
+        object.position = new Vector2(0, 84)
 
-      this.playerImages.push(playerImage) 
+        this.addWorld = object
+
+        this.lightSource1 = new LightSource(engine, new Vector2(-25, -21.5), new Vector3(1.0, 0.0, 0.0), 75)
+        this.lightSource2 = new LightSource(engine, new Vector2(25, -21.5), new Vector3(0.0, 1.0, 0.0), 75)
+        this.lightSource3 = new LightSource(engine, new Vector2(0, 21.5), new Vector3(0.0, 0.0, 1.0), 75)
+
+        this.addWorld = this.player
+
+        this.addWorld = this.lightSource1
+        this.addWorld = this.lightSource2
+        this.addWorld = this.lightSource3
     }
 
-    this.player.setImage(this.playerImages[this.playerFrame])
-  }
+    public update(dt: number) {
+        this.player.velocity.x *= .8
+        this.player.velocity.y *= .98
+        this.player.velocity.y += 10
+        // this.camera.position = new Vector2(this.player.position.x, this.player.position.y)
 
-  public update(dt: number) {
-    let moved = false
-    if (this.aDown) {
-      this.playerX -= 40*dt
-      
-      moved = true
+
+        let playerMovement = 0
+        if (this.engine.getKeyDown('d')) playerMovement += 50
+        if (this.engine.getKeyDown('a')) playerMovement -= 50
+        if (this.engine.getKeyDown(' ')) { this.player.velocity.y -= 100 }
+        
+        if (playerMovement != 0) this.player.velocity.x = playerMovement
+
+        if (
+            this.player.velocity.x < .5 && this.player.velocity.y < .5 &&
+            this.player.velocity.x > -.5 && this.player.velocity.y > -.5
+        ) this.player.frame.x = (this.player.frame.x+2*dt) % 4
     }
-    if (this.dDown) {
-      this.playerX += 40*dt
-      
-      if (moved) moved = false
-      else moved = true
-    }
-
-    if (!moved) {
-      this.playerFrame += 5 * dt
-      if (this.playerFrame > 4) this.playerFrame = 0
-      this.player.setImage(this.playerImages[Math.floor(this.playerFrame)])
-    } else {
-      this.playerFrame = 0
-      this.player.setImage(this.playerImages[Math.floor(this.playerFrame)])
-    }
-
-    this.player.setPosX(this.playerX)
-    
-    this.player.setPosY(this.playerY)
-  }
-
-  public render() {
-    this.clear(55, 175, 225, 255)
-
-    this.drawObject(this.player)
-  }
-
-  public keyDown(key: string) {
-    if (key == "a") this.aDown = true
-    if (key == "d") this.dDown = true
-  }
-  public keyUp(key: string) {
-    if (key == "a") this.aDown = false
-    if (key == "d") this.dDown = false
-  }
 }
 
-export default Client;
+export default GameScene
