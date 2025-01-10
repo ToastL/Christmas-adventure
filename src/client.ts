@@ -83,7 +83,7 @@ class GameScene extends Scene {
         let playerMovement = 0
         if (this.engine.getKeyDown('d')) playerMovement += 50
         if (this.engine.getKeyDown('a')) playerMovement -= 50
-        if (this.engine.getKeyDown(' ') && !this.jumping) { this.player.velocity.y -= 300; this.jumping = true }
+        if (this.engine.getKeyDown(' ') && !this.jumping) { this.player.velocity.y -= 20000 * dt; this.jumping = true }
         if (this.player.velocity.y == 0) this.jumping = false
         if (this.player.velocity.y > 0) this.jumping = true
         
