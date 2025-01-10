@@ -1,5 +1,5 @@
 import { BackBuffer, LightSource, Sprite, GameObject, Camera } from './material'
-import { Matrix3x3, Vector2 } from './math'
+import { Matrix3x3, Vector2, Vector3 } from './math'
 
 enum Blendmode {
     ALPHA,
@@ -46,7 +46,7 @@ class ToastEngine {
         this.gl.clearColor(1.0, 1.0, 1.0, 1.0)
 
         this.white = new Sprite(this, white, { width: this.canvas.width, height: this.canvas.height})
-        this.white.opacity = .5
+        this.white.opacity = .8
 
         this._scene = null
     }
@@ -124,21 +124,49 @@ class ToastEngine {
         this.gl.enable(this.gl.BLEND)
         this.blendmode = Blendmode.ALPHA
 
-        this.buffer = this.backBuffer
-        if (this.scene) for (let i = 0; i < this.scene.world.objects.length; i++) {
-            const object = this.scene.world.objects[i]
-            object.render()
-        }
-        
-        this.buffer = this.finalBuffer
-        if (this.scene) this.white.render(new Vector2(
-            this.scene.camera.position.x-this.scene.camera.size.x/2,
-            this.scene.camera.position.y-this.scene.camera.size.y/2
-        ), new Vector2(0, 0))
+        if (this.scene) {
+            this.buffer = this.backBuffer
+            for (let i = 0; i < this.scene.world.background.length; i++) {
+                const backgroundPosition = this.scene.backgroundPosition
+                const background = this.scene.world.background[i]
 
-        this.blendmode = Blendmode.ADDITIVE
-        if (this.scene) for (let i = 0; i < this.scene.world.lights.length; i++)
-            this.scene.world.lights[i].render()
+                background.layer.render(new Vector2(
+                    this.scene.camera.position.x-(backgroundPosition*background.speed % background.layer.size.x)-background.layer.size.x*2-this.scene.camera.size.x/2,
+                    this.scene.camera.position.y-this.scene.camera.size.y/2
+                ), new Vector2(0, 0))
+                background.layer.render(new Vector2(
+                    this.scene.camera.position.x-(backgroundPosition*background.speed % background.layer.size.x)-background.layer.size.x-this.scene.camera.size.x/2,
+                    this.scene.camera.position.y-this.scene.camera.size.y/2
+                ),new Vector2(0, 0))
+                background.layer.render(new Vector2(
+                    this.scene.camera.position.x-(backgroundPosition*background.speed % background.layer.size.x)-this.scene.camera.size.x/2,
+                    this.scene.camera.position.y-this.scene.camera.size.y/2
+                ), new Vector2(0, 0))
+                background.layer.render(new Vector2(
+                    this.scene.camera.position.x-(backgroundPosition*background.speed % background.layer.size.x)+background.layer.size.x-this.scene.camera.size.x/2,
+                    this.scene.camera.position.y-this.scene.camera.size.y/2
+                ), new Vector2(0, 0))
+                background.layer.render(new Vector2(
+                    this.scene.camera.position.x-(backgroundPosition*background.speed % background.layer.size.x)+background.layer.size.x*2-this.scene.camera.size.x/2,
+                    this.scene.camera.position.y-this.scene.camera.size.y/2
+                ), new Vector2(0, 0))
+            }
+
+            for (let i = 0; i < this.scene.world.objects.length; i++) {
+                const object = this.scene.world.objects[i]
+                object.render()
+            }
+        
+            this.buffer = this.finalBuffer
+            this.white.render(new Vector2(
+                this.scene.camera.position.x-this.scene.camera.size.x/2,
+                this.scene.camera.position.y-this.scene.camera.size.y/2
+            ), new Vector2(0, 0))
+
+            this.blendmode = Blendmode.ADDITIVE
+            for (let i = 0; i < this.scene.world.lights.length; i++)
+                this.scene.world.lights[i].render()
+        }
 
         this.buffer = null
         
@@ -179,7 +207,7 @@ class ToastEngine {
 
     public resize(x: number, y: number) {
         this.canvas.width = x
-        this.canvas.height= y
+        this.canvas.height = y
 
         this.white.size = new Vector2(x, y)
         
@@ -190,9 +218,11 @@ class ToastEngine {
     }
 }
 
+type GameWorld = { "background_position": number, "background": { layer: Sprite, speed: number }[], "objects": GameObject[], "lights": LightSource[] }
+
 class Scene {
 
-    private _world: { "objects": GameObject[], "lights": LightSource[] }
+    private _world: GameWorld
 
     private _camera: Camera
 
@@ -202,6 +232,8 @@ class Scene {
         this._engine = engine
 
         this._world = {
+            "background_position": 0,
+            "background": [],
             "objects": [],
             "lights": []
         }
@@ -212,6 +244,8 @@ class Scene {
     public get engine() { return this._engine }
     public set engine(value) { this._engine = value }
 
+    public get backgroundPosition() { return this._world.background_position }
+    public set backgroundPosition(value) { this._world.background_position = value }
     public get world() { return this._world }
     public set addWorld(value: GameObject | LightSource) { 
         if (value instanceof GameObject)

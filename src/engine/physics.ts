@@ -38,30 +38,26 @@ class BoxCollider {
         const bMidX = boxcollider.parent.position.x + boxcollider.position.x + boxcollider.size.x/2
         const bMidY = boxcollider.parent.position.y + boxcollider.position.y + boxcollider.size.y/2
 
-        // console.log(bMidX)
-
         const dx = (bMidX - aMidX) / (this.size.x + boxcollider.size.x)/2
         const dy = (bMidY - aMidY) / (this.size.y + boxcollider.size.y)/2
 
         const absDX = Math.abs(dx)
         const absDY = Math.abs(dy)
-        
-        if (Math.abs(absDX - absDY) < .001) {
-            if (dx > -.25 && dx < 0)
-                this.parent.position.x = boxcollider.parent.position.x + boxcollider.position.x + boxcollider.size.x
-            if (dx < .25 && dx > 0)
-                this.parent.position.x = boxcollider.parent.position.x + boxcollider.position.x - this.size.x
-            if (dy > -.25 && dy < 0)
-                this.parent.position.y = boxcollider.parent.position.y + boxcollider.position.y + boxcollider.size.y
-            if (dy < .25 && dy > 0)
-                this.parent.position.y = boxcollider.parent.position.y + boxcollider.position.y - this.size.y
 
-        } else if (absDX > absDY) {
-            if (dx > -.25 && dx < 0) { this.parent.position.x = boxcollider.parent.position.x + boxcollider.position.x + boxcollider.size.x - this.position.x; this.parent.velocity.x = 0 }
-            if (dx < .25 && dx > 0) { this.parent.position.x = boxcollider.parent.position.x + boxcollider.position.x - this.position.x - this.size.x; this.parent.velocity.x = 0 }
-        } else {
-            if (dy > -.25 && dy < 0) { this.parent.position.y = boxcollider.parent.position.y + boxcollider.position.y + boxcollider.size.y - this.position.y; this.parent.velocity.y = 0 }
-            if (dy < .25 && dy > 0) { this.parent.position.y = boxcollider.parent.position.y + boxcollider.position.y - this.position.y - this.size.y; this.parent.velocity.y = 0 }
+        if (absDX > absDY && absDX < 0.25) {
+            if (dx < 0.25 && dx > 0) this.parent.position.x = boxcollider.parent.position.x - this.size.x - boxcollider.position.x - this.position.x
+            if (dx > -0.25 && dx < 0) this.parent.position.x = boxcollider.parent.position.x + boxcollider.size.x - this.position.x - boxcollider.position.x
+
+            this.parent.velocity.x = 0
+        } else if (absDY > absDX && absDY < 0.25) {
+            if (dy < 0.25 && dy > 0) { 
+                this.parent.position.y = boxcollider.parent.position.y - this.size.y + boxcollider.position.y 
+                this.parent.velocity.y = 0
+            }
+            if (dy > -0.25 && dy < 0) { 
+                this.parent.position.y = boxcollider.parent.position.y + boxcollider.size.y - this.position.y
+                this.parent.velocity.y = -1
+            }
 
         }
     }
