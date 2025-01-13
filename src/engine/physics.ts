@@ -13,15 +13,15 @@ class BoxCollider {
     
     private _stuck
 
-    constructor(parent: GameObject, size?: Vector2, position?: Vector2) {
+    constructor(parent: GameObject, stuck?: boolean, size?: Vector2, position?: Vector2) {
         this._parent = parent
 
         this._position = new Vector2(0, 0)
         if (position) this._position = position
         this._size = parent.sprite.size
         if (size) this._size = size
-
         this._stuck = false
+        if (stuck) this._stuck = stuck
     }
 
     public get parent() { return this._parent}

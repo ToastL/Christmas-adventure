@@ -121,4 +121,67 @@ class Matrix3x3 {
     }
 }
 
-export { Vector2, Vector3, Matrix3x3 }
+class ValueNoise {
+    private seed: number;
+    private frequency: number;
+    private amplitude: number;
+    private persistence: number;
+    private octaves: number;
+  
+    constructor(seed: number, frequency = 0.01, amplitude = 50, persistence = 0.5, octaves = 4) {
+      this.seed = seed;
+      this.frequency = frequency;
+      this.amplitude = amplitude;
+      this.persistence = persistence;
+      this.octaves = octaves;
+    }
+  
+    private hash(x: number): number {
+      // Simple hash function based on the seed
+      const h = Math.sin(x * 127.1 + this.seed) * 43758.5453123;
+      return h - Math.floor(h);
+    }
+  
+    private lerp(a: number, b: number, t: number): number {
+      // Linear interpolation
+      return a + t * (b - a);
+    }
+  
+    private smoothStep(t: number): number {
+      // Smoothstep function for better interpolation
+      return t * t * (3 - 2 * t);
+    }
+  
+    private valueNoise(x: number): number {
+      // Generate value noise for a given x-coordinate
+      const x0 = Math.floor(x); // Left grid point
+      const x1 = x0 + 1;        // Right grid point
+      const t = this.smoothStep(x - x0); // Interpolation factor
+  
+      const v0 = this.hash(x0); // Random value at x0
+      const v1 = this.hash(x1); // Random value at x1
+  
+      return this.lerp(v0, v1, t); // Interpolated value
+    }
+  
+    private perlinNoise(x: number): number {
+      let total = 0;
+      let frequency = this.frequency;
+      let amplitude = this.amplitude;
+  
+      for (let i = 0; i < this.octaves; i++) {
+        total += this.valueNoise(x * frequency) * amplitude;
+        frequency *= 2;
+        amplitude *= this.persistence;
+      }
+  
+      return total;
+    }
+  
+    public getHeight(iteration: number): number {
+      return this.perlinNoise(iteration);
+    }
+}
+
+export { Vector2, Vector3, Matrix3x3, ValueNoise}
+
