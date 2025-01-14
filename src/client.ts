@@ -12,16 +12,23 @@ import background5 from './img/background/clouds_mg_2.png'
 import standing_gasmask from './img/standing_gasmask.png'
 import spritesheet from './img/spritesheet.png'
 
+import torch_sprite from './img/torch.png'
+
+import { createChunk } from './chunk.ts'
+
 class GameScene extends Scene {
     private player
     private jumping = false
+
+    private torch
 
     private sun
 
     private daynight = .7
     private night = 1
     
-    private terrain: number[] = []
+    private terrainGen: ValueNoise
+    private terrainChunks: number[][]
 
     constructor(engine: ToastEngine) {
         super(engine)
@@ -49,11 +56,45 @@ class GameScene extends Scene {
             },
         ]
         
+        this.terrainGen = new ValueNoise(Math.round(Math.random()*1000))
+
+        console.log(createChunk(1, 10))
+        this.terrainChunks = []
+        for (let i = 0; i < 20; i++) {
+            let chunk: number[] = []
+            const terrain = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0].map((_, j) => Math.round(this.terrainGen.getHeight(i*10+j)))
+            for (let j = 0; j < 256; j++) chunk.push(...[0, 0, 0, 0, 0, 0, 0 , 0, 0, 0].map((_, k) => {
+                if (terrain[k] == j)
+                    return 1
+                return 0
+            }))
+            this.terrainChunks[i] = chunk
+        }
+
+        for (let c = 0; c < this.terrainChunks.length; c++) {
+            for (let i = 0; i < 256; i++) {
+                for (let j = 0; j < 10; j++) {
+                    const blockID = this.terrainChunks[c][i*10+j]
+    
+                    if (blockID > 0) {
+                        const block = new GameObject(engine, new Sprite(engine, spritesheet))
+                        block.boxcollider = new BoxCollider(block, true, new Vector2(32, 28), new Vector2(0, 4))
+                        block.frame.x = 1
+                        block.position.x = (c*10+j)*32
+                        block.position.y = i*32
+    
+                        this.addWorld = block
+                    }
+                }
+            }
+        }
+
         this.player = new GameObject(engine, new Sprite(engine, standing_gasmask, { width: 32, height: 32 }))
         this.player.boxcollider = new BoxCollider(this.player, false, new Vector2(12, 32), new Vector2(13, 0))
 
         this.addWorld = this.player
 
+<<<<<<< HEAD
         const terrainGen = new ValueNoise(Math.round(Math.random() * 1000));
         for (let i = 0; i < 100; i++) {
             const height = Math.round(terrainGen.getHeight(i));
@@ -76,13 +117,16 @@ class GameScene extends Scene {
                 dirtBlock.position.y = (height + j) * 32;
                 this.addWorld = dirtBlock;
             }
+=======
+        for (let i = 0; i < 100; i++) {
+            const height = Math.round(this.terrainGen.getHeight(i))
+
+            // this.terrain.push(height)
+>>>>>>> 918ccc7600d20823782872688f20158461455bd9
         }
         
 
-        this.player.position.y = this.terrain[0]*32-96
-        
-        console.log(this.terrain)
-
+        // this.player.position.y = this.terrain[0]*32-96
 
 
         
@@ -90,14 +134,17 @@ class GameScene extends Scene {
 
         this.addWorld = this.sun
 
+        this.torch = new GameObject(engine, new Sprite(engine, torch_sprite, { width: 8, height: 32}))
+        // this.torch.position.y = (this.terrain[0]-1)*32
 
+        this.addWorld = this.torch
     }
 
     public update(dt: number) {
         let playerMovement = 0
-        if (this.engine.getKeyDown('d')) playerMovement += 20000 * dt
-        if (this.engine.getKeyDown('a')) playerMovement -= 20000 * dt
-        if (this.engine.getKeyDown(' ') && !this.jumping) { this.player.velocity.y -= 80000 * dt; this.jumping = true }
+        if (this.engine.getKeyDown('d')) playerMovement += 200
+        if (this.engine.getKeyDown('a')) playerMovement -= 200
+        if (this.engine.getKeyDown(' ') && !this.jumping) { this.player.velocity.y -= 320; this.jumping = true }
         if (this.player.velocity.y == 0) this.jumping = false
         if (this.player.velocity.y > 0) this.jumping = true
         
@@ -107,6 +154,7 @@ class GameScene extends Scene {
             this.player.velocity.x < .5 && this.player.velocity.y < .5 &&
             this.player.velocity.x > -.5 && this.player.velocity.y > -.5
         ) this.player.frame.x = (this.player.frame.x+2*dt) % 4
+        this.torch.frame.x = (this.torch.frame.x+4*dt) % 4
 
 
         this.player.velocity.x *= .8
