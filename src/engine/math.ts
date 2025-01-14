@@ -137,31 +137,27 @@ class ValueNoise {
     }
   
     private hash(x: number): number {
-      // Simple hash function based on the seed
       const h = Math.sin(x * 127.1 + this.seed) * 43758.5453123;
       return h - Math.floor(h);
     }
   
     private lerp(a: number, b: number, t: number): number {
-      // Linear interpolation
       return a + t * (b - a);
     }
   
     private smoothStep(t: number): number {
-      // Smoothstep function for better interpolation
       return t * t * (3 - 2 * t);
     }
   
     private valueNoise(x: number): number {
-      // Generate value noise for a given x-coordinate
-      const x0 = Math.floor(x); // Left grid point
-      const x1 = x0 + 1;        // Right grid point
-      const t = this.smoothStep(x - x0); // Interpolation factor
+      const x0 = Math.floor(x);
+      const x1 = x0 + 1;
+      const t = this.smoothStep(x - x0); 
   
-      const v0 = this.hash(x0); // Random value at x0
-      const v1 = this.hash(x1); // Random value at x1
+      const v0 = this.hash(x0);
+      const v1 = this.hash(x1);
   
-      return this.lerp(v0, v1, t); // Interpolated value
+      return this.lerp(v0, v1, t);
     }
   
     private perlinNoise(x: number): number {

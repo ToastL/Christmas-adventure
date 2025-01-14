@@ -54,25 +54,38 @@ class GameScene extends Scene {
 
         this.addWorld = this.player
 
-        const terrainGen = new ValueNoise(Math.round(Math.random()*1000))
+        const terrainGen = new ValueNoise(Math.round(Math.random() * 1000));
         for (let i = 0; i < 100; i++) {
-            const height = Math.round(terrainGen.getHeight(i))
-
-            const block = new GameObject(engine, new Sprite(engine, spritesheet))
-            block.boxcollider = new BoxCollider(block, true, new Vector2(32, 28), new Vector2(0, 4))
-            block.frame.x = 1
-            block.position.x = i * 32
-            block.position.y = height*32
-            this.addWorld = block
-
-            this.terrain.push(height)
+            const height = Math.round(terrainGen.getHeight(i));
+        
+            const block = new GameObject(engine, new Sprite(engine, spritesheet));
+            block.boxcollider = new BoxCollider(block, true, new Vector2(32, 28), new Vector2(0, 4));
+            block.frame.x = 1; 
+            block.position.x = i * 32;
+            block.position.y = height * 32;
+            this.addWorld = block;
+        
+            this.terrain.push(height);
+        
+            for (let j = 1; j <= 3; j++) { 
+                const dirtBlock = new GameObject(engine, new Sprite(engine, spritesheet));
+                dirtBlock.boxcollider = new BoxCollider(dirtBlock, true, new Vector2(32, 28), new Vector2(0, 4));
+                dirtBlock.frame.x = 1; 
+                dirtBlock.frame.y = 1;
+                dirtBlock.position.x = i * 32;
+                dirtBlock.position.y = (height + j) * 32;
+                this.addWorld = dirtBlock;
+            }
         }
+        
 
         this.player.position.y = this.terrain[0]*32-96
         
         console.log(this.terrain)
 
 
+
+        
         this.sun = new LightSource(engine, new Vector2(0, 0), new Vector3(0.0, 0.0, 0.0), 1000)
 
         this.addWorld = this.sun
