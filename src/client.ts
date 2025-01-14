@@ -9,6 +9,7 @@ import background3 from './img/background/glacial_mountains_lightened.png'
 import background4 from './img/background/clouds_mg_3.png'
 import background5 from './img/background/clouds_mg_2.png'
 
+import running_gasmask from './img/running_gasmask.png'
 import standing_gasmask from './img/standing_gasmask.png'
 import spritesheet from './img/spritesheet.png'
 
@@ -18,6 +19,7 @@ import { createChunk } from './chunk.ts'
 
 class GameScene extends Scene {
     private player
+    private player_sprites: { [key: string]: Sprite }
     private jumping = false
 
     private torch
@@ -89,40 +91,19 @@ class GameScene extends Scene {
             }
         }
 
-        this.player = new GameObject(engine, new Sprite(engine, standing_gasmask, { width: 32, height: 32 }))
+        this.player_sprites = {
+            "idle": new Sprite(engine, standing_gasmask, { width: 32, height: 32 }),
+            "running": new Sprite(engine, running_gasmask, { width: 32, height: 32})
+        }
+        this.player = new GameObject(engine, this.player_sprites.idle)
         this.player.boxcollider = new BoxCollider(this.player, false, new Vector2(12, 32), new Vector2(13, 0))
 
         this.addWorld = this.player
 
-<<<<<<< HEAD
-        const terrainGen = new ValueNoise(Math.round(Math.random() * 1000));
-        for (let i = 0; i < 100; i++) {
-            const height = Math.round(terrainGen.getHeight(i));
-        
-            const block = new GameObject(engine, new Sprite(engine, spritesheet));
-            block.boxcollider = new BoxCollider(block, true, new Vector2(32, 28), new Vector2(0, 4));
-            block.frame.x = 1; 
-            block.position.x = i * 32;
-            block.position.y = height * 32;
-            this.addWorld = block;
-        
-            this.terrain.push(height);
-        
-            for (let j = 1; j <= 3; j++) { 
-                const dirtBlock = new GameObject(engine, new Sprite(engine, spritesheet));
-                dirtBlock.boxcollider = new BoxCollider(dirtBlock, true, new Vector2(32, 28), new Vector2(0, 4));
-                dirtBlock.frame.x = 1; 
-                dirtBlock.frame.y = 1;
-                dirtBlock.position.x = i * 32;
-                dirtBlock.position.y = (height + j) * 32;
-                this.addWorld = dirtBlock;
-            }
-=======
         for (let i = 0; i < 100; i++) {
             const height = Math.round(this.terrainGen.getHeight(i))
 
             // this.terrain.push(height)
->>>>>>> 918ccc7600d20823782872688f20158461455bd9
         }
         
 
@@ -149,12 +130,16 @@ class GameScene extends Scene {
         if (this.player.velocity.y > 0) this.jumping = true
         
         if (playerMovement != 0) this.player.velocity.x = playerMovement
+        if (Math.abs(this.player.velocity.x) > .5) {
+            this.player.sprite = this.player_sprites.running
+            this.player.frame.x = (this.player.frame.x+5*dt) % 4
+        }
+        else {
+            this.player.sprite = this.player_sprites.idle 
+            this.player.frame.x = (this.player.frame.x+2*dt) % 4
+        }
 
-        if (
-            this.player.velocity.x < .5 && this.player.velocity.y < .5 &&
-            this.player.velocity.x > -.5 && this.player.velocity.y > -.5
-        ) this.player.frame.x = (this.player.frame.x+2*dt) % 4
-        this.torch.frame.x = (this.torch.frame.x+4*dt) % 4
+       
 
 
         this.player.velocity.x *= .8

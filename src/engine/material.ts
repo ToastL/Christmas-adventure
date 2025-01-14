@@ -372,10 +372,11 @@ class GameObject {
     public get engine() { return this._engine }
 
     public get position() { return this.objectValues.position }
-    public set position(position) { this.objectValues.position = position }
+    public set position(value) { this.objectValues.position = value }
     public get velocity() { return this.objectValues.velocity }
-    public set velocity(velocity) { this.objectValues.velocity = velocity }
+    public set velocity(value) { this.objectValues.velocity = value }
     public get sprite() { return this._sprite }
+    public set sprite(value) { this._sprite = value }
     public get boxcollider() { return this._boxcollider }
     public set boxcollider(value) { this._boxcollider = value }
 
