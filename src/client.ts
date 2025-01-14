@@ -14,9 +14,7 @@ import spritesheet from './img/spritesheet.png'
 
 import torch_sprite from './img/torch.png'
 
-function createChunk(i: number) {
-    
-}
+import { createChunk } from './chunk.ts'
 
 class GameScene extends Scene {
     private player
@@ -60,11 +58,12 @@ class GameScene extends Scene {
         
         this.terrainGen = new ValueNoise(Math.round(Math.random()*1000))
 
+        console.log(createChunk(1, 10))
         this.terrainChunks = []
         for (let i = 0; i < 20; i++) {
             let chunk: number[] = []
             const terrain = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0].map((_, j) => Math.round(this.terrainGen.getHeight(i*10+j)))
-            for (let j = 0; j < 256; j++) chunk.push(...[0, 0, 0, 0, 0, 0, 0, 0, 0, 0].map((_, k) => {
+            for (let j = 0; j < 256; j++) chunk.push(...[0, 0, 0, 0, 0, 0, 0 , 0, 0, 0].map((_, k) => {
                 if (terrain[k] == j)
                     return 1
                 return 0
@@ -84,7 +83,6 @@ class GameScene extends Scene {
                         block.position.x = (c*10+j)*32
                         block.position.y = i*32
     
-                        console.log(i, j)
                         this.addWorld = block
                     }
                 }
