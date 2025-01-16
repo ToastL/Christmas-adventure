@@ -15,7 +15,7 @@ import spritesheet from './img/spritesheet.png'
 
 import torch_sprite from './img/torch.png'
 
-import { createChunk } from './chunk.ts'
+import { ChunkList, createChunk, getRenderBlocks } from './chunk.ts'
 
 class GameScene extends Scene {
     private player
@@ -29,8 +29,8 @@ class GameScene extends Scene {
     private daynight = .7
     private night = 1
     
-    private terrainGen: ValueNoise
-    private terrainChunks: number[][]
+    private worldNoise: ValueNoise
+    private terrainChunks: ChunkList
 
     constructor(engine: ToastEngine) {
         super(engine)
@@ -58,38 +58,13 @@ class GameScene extends Scene {
             },
         ]
         
-        this.terrainGen = new ValueNoise(Math.round(Math.random()*1000))
+        this.worldNoise = new ValueNoise(Math.round(Math.random()*1000))
 
-        console.log(createChunk(1, 10))
-        this.terrainChunks = []
-        for (let i = 0; i < 20; i++) {
-            let chunk: number[] = []
-            const terrain = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0].map((_, j) => Math.round(this.terrainGen.getHeight(i*10+j)))
-            for (let j = 0; j < 256; j++) chunk.push(...[0, 0, 0, 0, 0, 0, 0 , 0, 0, 0].map((_, k) => {
-                if (terrain[k] == j)
-                    return 1
-                return 0
-            }))
-            this.terrainChunks[i] = chunk
+        this.terrainChunks = {
+            chunkSize: 10,
+            chunks: []
         }
-
-        for (let c = 0; c < this.terrainChunks.length; c++) {
-            for (let i = 0; i < 256; i++) {
-                for (let j = 0; j < 10; j++) {
-                    const blockID = this.terrainChunks[c][i*10+j]
-    
-                    if (blockID > 0) {
-                        const block = new GameObject(engine, new Sprite(engine, spritesheet))
-                        block.boxcollider = new BoxCollider(block, true, new Vector2(32, 28), new Vector2(0, 4))
-                        block.frame.x = 1
-                        block.position.x = (c*10+j)*32
-                        block.position.y = i*32
-    
-                        this.addWorld = block
-                    }
-                }
-            }
-        }
+        for (let i = 0; i < 1; i++) this.terrainChunks.chunks.push(createChunk(this.worldNoise, i, this.terrainChunks.chunkSize))
 
         this.player_sprites = {
             "idle": new Sprite(engine, standing_gasmask, { width: 32, height: 32 }),
@@ -100,23 +75,11 @@ class GameScene extends Scene {
 
         this.addWorld = this.player
 
-        for (let i = 0; i < 100; i++) {
-            const height = Math.round(this.terrainGen.getHeight(i))
-
-            // this.terrain.push(height)
-        }
-        
-
-        // this.player.position.y = this.terrain[0]*32-96
-
-
-        
         this.sun = new LightSource(engine, new Vector2(0, 0), new Vector3(0.0, 0.0, 0.0), 1000)
 
         this.addWorld = this.sun
 
         this.torch = new GameObject(engine, new Sprite(engine, torch_sprite, { width: 8, height: 32}))
-        // this.torch.position.y = (this.terrain[0]-1)*32
 
         this.addWorld = this.torch
     }
@@ -133,14 +96,14 @@ class GameScene extends Scene {
         if (Math.abs(this.player.velocity.x) > .5) {
             this.player.sprite = this.player_sprites.running
             this.player.frame.x = (this.player.frame.x+5*dt) % 4
+            
         }
         else {
             this.player.sprite = this.player_sprites.idle 
             this.player.frame.x = (this.player.frame.x+2*dt) % 4
         }
-
        
-
+        getRenderBlocks(this, this.worldNoise, this.camera, this.terrainChunks)
 
         this.player.velocity.x *= .8
         this.player.velocity.y *= .98

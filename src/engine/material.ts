@@ -202,7 +202,7 @@ class Sprite {
         this.isLoaded = true
     }
 
-    public render(position: Vector2, frame: Vector2) {
+    public render(position: Vector3, frame: Vector2) {
         if (!this.isLoaded)
             return
 
@@ -210,7 +210,7 @@ class Sprite {
         const frameX = fixedFrame.x * this.uv_x
         const frameY = fixedFrame.y * this.uv_y
 
-        const fixedPosition = position.floor
+        const fixedPosition = position
         const objMat = new Matrix3x3().translate(fixedPosition.x, fixedPosition.y)
 
         const camVec = this.engine.scene?.camera.Vector2
@@ -340,7 +340,7 @@ class LightSource {
 }
 
 type ObjectContents = {
-    position: Vector2
+    position: Vector3
     velocity: Vector2
     frame: Vector2
 }
@@ -358,7 +358,7 @@ class GameObject {
         this._engine = engine
 
         this.objectValues = {
-            position: new Vector2(0, 0),
+            position: new Vector3(0, 0, 1),
             velocity: new Vector2(0, 0),
 
             frame: new Vector2(0, 0)
