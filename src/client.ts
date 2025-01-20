@@ -22,6 +22,7 @@ import { ChunkList, createChunk, getRenderBlocks } from './chunk.ts'
 class GameScene extends Scene {
     private player
     private player_sprites: { [key: string]: Sprite }
+    private playerFlip = false
     private jumping = false
 
     private torch
@@ -88,55 +89,61 @@ class GameScene extends Scene {
     }
 
     public update(dt: number) {
-        let playerMovement = 0;
+        let playerMovement = 0
         
-        if (this.engine.getKeyDown('d')) playerMovement += 200;
-        if (this.engine.getKeyDown('a')) playerMovement -= 200;
+        if (this.engine.getKeyDown('d')) {
+            this.playerFlip = false
+            playerMovement += 200
+        }
+        if (this.engine.getKeyDown('a')) {
+            this.playerFlip = true
+            playerMovement -= 200
+        }
 
         
     
         if (this.engine.getKeyDown(' ') && !this.jumping) { 
-            this.player.velocity.y -= 320; 
-            this.jumping = true;
+            this.player.velocity.y -= 320
+            this.jumping = true
         }
     
         if (this.player.velocity.y == 0) this.jumping = false
-        if (this.player.velocity.y > 0) this.jumping = true;
-    
+        if (this.player.velocity.y > 0) this.jumping = true
+
         if (this.jumping) {
             this.player.sprite = this.player_sprites.jumping
-            this.player.frame.x = (this.player.frame.x + 5 * dt) % 3
+            this.player.frame.x = (this.playerFlip ? 3 : 0) + (this.player.frame.x + 5 * dt) % 3
         } else if (playerMovement != 0) {
             this.player.sprite = this.player_sprites.running
-            this.player.frame.x = (this.player.frame.x + 5 * dt) % 4
+            this.player.frame.x = (this.playerFlip ? 4 : 0) + (this.player.frame.x + 5 * dt) % 4
         } else {
             this.player.sprite = this.player_sprites.idle
-            this.player.frame.x = (this.player.frame.x + 2 * dt) % 4
+            this.player.frame.x = (this.playerFlip ? 4 : 0) + (this.player.frame.x + 2 * dt) % 4
         }
     
-        if (playerMovement != 0) this.player.velocity.x = playerMovement;
+        if (playerMovement != 0) this.player.velocity.x = playerMovement
 
         
     
-        getRenderBlocks(this, this.worldNoise, this.camera, this.terrainChunks);
+        getRenderBlocks(this, this.worldNoise, this.camera, this.terrainChunks)
     
-        this.player.velocity.x *= 0.8;
-        this.player.velocity.y *= 0.98;
-        this.player.velocity.y += 1000 * dt;
+        this.player.velocity.x *= 0.8
+        this.player.velocity.y *= 0.98
+        this.player.velocity.y += 1000 * dt
     
-        this.camera.position.x += (this.player.position.x - this.camera.position.x) / 10;
-        this.camera.position.y += (this.player.position.y - this.camera.position.y + 32) / 10;
+        this.camera.position.x += (this.player.position.x - this.camera.position.x) / 10
+        this.camera.position.y += (this.player.position.y - this.camera.position.y + 32) / 10
     
-        this.backgroundPosition = this.camera.position.x;
-        this.sun.position.x = this.camera.position.x;
-        this.sun.position.y = this.camera.position.y - 200;
+        this.backgroundPosition = this.camera.position.x
+        this.sun.position.x = this.camera.position.x
+        this.sun.position.y = this.camera.position.y - 200
     
-        this.daynight += 0.01 * (this.night * 2 - 1) * dt;
-        if (this.daynight > 1 || this.daynight < 0) this.night = 1 - this.night;
+        this.daynight += 0.01 * (this.night * 2 - 1) * dt
+        if (this.daynight > 1 || this.daynight < 0) this.night = 1 - this.night
     
-        this.sun.color.x = this.daynight;
-        this.sun.color.y = this.daynight;
-        this.sun.color.z = this.daynight;
+        this.sun.color.x = this.daynight
+        this.sun.color.y = this.daynight
+        this.sun.color.z = this.daynight
     }
     
     
