@@ -90,10 +90,8 @@ class GameScene extends Scene {
     public update(dt: number) {
         let playerMovement = 0;
         
-        if (this.engine.getKeyDown('d')) playerMovement += 200
-        this.player.facing = 'right'
-        if (this.engine.getKeyDown('a')) playerMovement -= 200
-        this.player.facing = 'left'
+        if (this.engine.getKeyDown('d')) playerMovement += 200;
+        if (this.engine.getKeyDown('a')) playerMovement -= 200;
 
         
     
